@@ -1,6 +1,7 @@
 import streamlit as st
 import yfinance as yf
 import plotly.graph_objects as go
+from ta.momentum import RSIIndicator
 
 from database import (
     initialize_database,
@@ -136,7 +137,9 @@ if page == "📊 Stock Analysis":
 
             if hasattr(close, "columns"):
                 close = close.iloc[:, 0]
-
+            
+            close = close.dropna()
+            data = data.loc[close.index]
             current_price = float(close.iloc[-1])
             previous_price = float(close.iloc[-2])
 
@@ -147,7 +150,20 @@ if page == "📊 Stock Analysis":
 
             high_52 = float(close.max())
             low_52 = float(close.min())
+            
+            close_for_rsi = close.iloc[:, 0] if hasattr(close, "columns") else close
 
+            rsi_indicator = RSIIndicator(close=close_for_rsi, window=14)
+
+            rsi_series = rsi_indicator.rsi()
+
+            rsi_value = rsi_series.iloc[-1]
+
+            if hasattr(rsi_value, "iloc"):
+                rsi_value = rsi_value.iloc[0]
+
+            rsi = float(rsi_value)
+           
             sma20 = close.rolling(20).mean()
             sma50 = close.rolling(50).mean()
 
@@ -168,23 +184,6 @@ if page == "📊 Stock Analysis":
                 drawdown.min() * 100
             )
 
-            # RSI
-
-            delta = close.diff()
-
-            gains = delta.clip(lower=0)
-            losses = -delta.clip(upper=0)
-
-            avg_gain = gains.rolling(14).mean()
-            avg_loss = losses.rolling(14).mean()
-
-            rs = avg_gain / avg_loss
-
-            rsi = 100 - (
-                100 / (1 + rs)
-            )
-
-            current_rsi = float(rsi.iloc[-1])
 
             st.success(
                 f"Successfully loaded data for {ticker.upper()}"
@@ -228,6 +227,11 @@ if page == "📊 Stock Analysis":
                 f"₹{low_52:,.2f}"
             )
 
+            st.metric(
+            "RSI (14)",
+            f"{rsi:.2f}"
+            )
+
             c3.metric(
                 "20-Day SMA",
                 f"₹{float(sma20.iloc[-1]):,.2f}"
@@ -248,7 +252,7 @@ if page == "📊 Stock Analysis":
 
             r1.metric(
                 "RSI (14)",
-                f"{current_rsi:.2f}"
+                f"{rsi:.2f}"
             )
 
             r2.metric(
@@ -320,7 +324,7 @@ if page == "📊 Stock Analysis":
             rsi_fig.add_trace(
                 go.Scatter(
                     x=data.index,
-                    y=rsi,
+                    y=rsi_series,
                     mode="lines",
                     name="RSI"
                 )
@@ -447,7 +451,7 @@ elif page == "🔍 Compare Stocks":
 
                 if hasattr(close, "columns"):
                     close = close.iloc[:, 0]
-
+                close = close.dropna()
                 # One-year return
                 total_return = (
                     (close.iloc[-1] / close.iloc[0]) - 1
@@ -671,7 +675,7 @@ elif page == "💼 Portfolio":
 
             if hasattr(close, "columns"):
                 close = close.iloc[:, 0]
-
+            close = close.dropna()
             current_price = float(
                 close.iloc[-1]
             )
