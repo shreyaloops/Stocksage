@@ -1,0 +1,9 @@
+venv/
+__pycache__/
+*.pyc
+portfolio.db
+.DS_Store
+app_backup.py
+before_cleanup_backup.py
+portfolio_working_backup.py
+ui_backup.py
