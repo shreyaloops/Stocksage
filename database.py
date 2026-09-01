@@ -73,3 +73,6 @@ def delete_holding(holding_id):
 
     conn.commit()
     conn.close()
+
+
+initialize_database()
