@@ -2,6 +2,7 @@ import streamlit as st
 import yfinance as yf
 import plotly.graph_objects as go
 from ta.momentum import RSIIndicator
+from ta.trend import MACD
 
 from database import (
     initialize_database,
@@ -163,7 +164,21 @@ if page == "📊 Stock Analysis":
                 rsi_value = rsi_value.iloc[0]
 
             rsi = float(rsi_value)
-           
+            
+            # MACD
+            macd_indicator = MACD(close=close_for_rsi)
+
+            macd_series = macd_indicator.macd()
+
+            macd_signal_series = macd_indicator.macd_signal()
+
+            macd_value = macd_series.iloc[-1]
+
+            if hasattr(macd_value, "iloc"):
+                macd_value = macd_value.iloc[0]
+
+            macd = float(macd_value)
+
             sma20 = close.rolling(20).mean()
             sma50 = close.rolling(50).mean()
 
@@ -228,8 +243,12 @@ if page == "📊 Stock Analysis":
             )
 
             st.metric(
-            "RSI (14)",
-            f"{rsi:.2f}"
+                "RSI (14)",
+                f"{rsi:.2f}"
+            )
+            st.metric(
+                "MACD",
+                f"{macd:.2f}"
             )
 
             c3.metric(
@@ -353,6 +372,40 @@ if page == "📊 Stock Analysis":
                 use_container_width=True
             )
 
+            # MACD Chart
+            
+            macd_fig = go.Figure()
+            
+            macd_fig.add_trace(
+                go.Scatter(
+                    x=close.index,
+                    y=macd_series,
+                    mode="lines",
+                    name="MACD"
+                )
+            )
+            
+            macd_fig.add_trace(
+                go.Scatter(
+                    x=close.index,
+                    y=macd_signal_series,
+                    mode="lines",
+                    name="Signal"
+                )
+            )
+            
+            macd_fig.update_layout(
+                title="MACD",
+                xaxis_title="Date",
+                yaxis_title="MACD",
+                hovermode="x unified"
+            )
+            
+            st.plotly_chart(
+                macd_fig,
+                use_container_width=True
+            )
+            
 elif page == "🔍 Compare Stocks":
 
     st.title("🔍 Compare Stocks")
