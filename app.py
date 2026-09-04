@@ -525,7 +525,15 @@ elif page == "🔍 Compare Stocks":
                     * (252 ** 0.5)
                     * 100
                 )
-
+                # Risk Score
+                if volatility < 15:
+                    risk_score = "Low"
+                elif volatility < 30:
+                    risk_score = "Moderate"
+                elif volatility < 45:
+                    risk_score = "High"
+                else:
+                    risk_score = "Very High"
                 # RSI
                 delta = close.diff()
 
@@ -547,7 +555,8 @@ elif page == "🔍 Compare Stocks":
                     "Stock": name,
                     "1-Year Return": f"{float(total_return):.2f}%",
                     "Volatility": f"{float(volatility):.2f}%",
-                    "RSI": f"{current_rsi:.2f}"
+                    "RSI": f"{current_rsi:.2f}",
+                    "Risk Level": risk_score             
                 })
 
                 # Normalize prices to 100
