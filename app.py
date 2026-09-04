@@ -505,6 +505,13 @@ elif page == "🔍 Compare Stocks":
                 if hasattr(close, "columns"):
                     close = close.iloc[:, 0]
                 close = close.dropna()
+
+
+                normalized_data[name] = (
+                    close / close.iloc[0]
+                ) * 100
+
+
                 # One-year return
                 total_return = (
                     (close.iloc[-1] / close.iloc[0]) - 1
