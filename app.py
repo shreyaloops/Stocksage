@@ -712,7 +712,8 @@ elif page == "💼 Portfolio":
 
         allocation_names = []
         allocation_values = []
-
+        
+        performance_data = []
         # ======================================
         # DISPLAY HOLDINGS
         # ======================================
@@ -768,7 +769,11 @@ elif page == "💼 Portfolio":
 
             allocation_names.append(name)
             allocation_values.append(current_value)
-
+            
+            performance_data.append({
+                "name": name,
+                "return": return_percentage
+            })
             # ==================================
             # HOLDING DISPLAY
             # ==================================
