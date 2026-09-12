@@ -7,3 +7,5 @@ app_backup.py
 before_cleanup_backup.py
 portfolio_working_backup.py
 ui_backup.py
+before_*.py
+stable_v1_backup.py
