@@ -860,6 +860,38 @@ elif page == "💼 Portfolio":
             # ==================================
             # PORTFOLIO ALLOCATION
             # ==================================
+        # PORTFOLIO PERFORMANCE ANALYTICS
+
+        if performance_data:
+            best_holding = max(
+                performance_data,
+                key=lambda x: x["return"]
+            )
+
+            worst_holding = min(
+                performance_data,
+                key=lambda x: x["return"]
+            )
+
+            st.subheader("📊 Portfolio Performance")
+
+            p1, p2, p3 = st.columns(3)
+
+            p1.metric(
+                "🏆 Best Performer",
+                best_holding["name"],
+                f'{best_holding["return"]:.2f}%'
+            )
+
+            p2.metric(
+                "📉 Worst Performer",
+                worst_holding["name"],
+                f'{worst_holding["return"]:.2f}%'
+            )
+            p3.metric(
+                "📦 Holdings",
+                len(performance_data)
+            )
 
             if allocation_values:
 
