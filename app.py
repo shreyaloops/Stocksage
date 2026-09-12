@@ -821,7 +821,36 @@ elif page == "💼 Portfolio":
         # ======================================
         # PORTFOLIO SUMMARY
         # ======================================
+        # ======================================
+        # PORTFOLIO DIVERSIFICATION
+        # ======================================
 
+        if total_current > 0 and allocation_values:
+            largest_holding = max(allocation_values)
+            concentration = (
+                largest_holding / total_current
+            ) * 100
+
+            if concentration <= 40:
+                diversification_status = "🟢 Well Diversified"
+            elif concentration <= 60:
+                diversification_status = "🟡 Moderately Concentrated"
+            else:
+                diversification_status = "🔴 Highly Concentrated"
+
+            st.subheader("🛡️ Portfolio Diversification")
+
+            d1, d2 = st.columns(2)
+
+            d1.metric(
+                "Largest Holding",
+                f"{concentration:.1f}%"
+            )
+
+            d2.metric(
+                "Diversification",
+                diversification_status
+            )
         if total_invested > 0:
 
             total_profit_loss = (
