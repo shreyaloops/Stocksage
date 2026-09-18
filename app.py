@@ -97,8 +97,19 @@ with st.sidebar:
 
 if page == "📊 Stock Analysis":
 
-    st.title("📊 Stock Analysis")
-
+    st.markdown(
+    """
+    <div style="padding: 10px 0 25px 0;">
+        <h1 style="margin-bottom: 5px;">
+            📈 StockSage
+        </h1>
+        <p style="font-size: 18px; color: #9aa4b2;">
+            Interactive Stock Market Analytics Dashboard
+        </p>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
     st.write(
         "Analyze market performance, technical indicators "
         "and risk metrics."
