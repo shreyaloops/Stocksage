@@ -637,8 +637,19 @@ elif page == "🔍 Compare Stocks":
 
 elif page == "💼 Portfolio":
 
-    st.title("💼 Portfolio")
-
+    st.markdown(
+    """
+    <div style="padding: 10px 0 25px 0;">
+        <h1 style="margin-bottom: 5px;">
+            💼 My Portfolio
+        </h1>
+        <p style="font-size: 18px; color: #9aa4b2;">
+            Track holdings, performance, allocation, and portfolio risk
+        </p>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
     st.write(
         "Track your holdings, portfolio value and overall performance."
     )
