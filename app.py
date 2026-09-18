@@ -342,6 +342,49 @@ if page == "📊 Stock Analysis":
                 fig,
                 use_container_width=True
             )
+            # CANDLESTICK CHART
+            st.subheader("🕯️ Candlestick Chart")
+
+            candle_open = data["Open"]
+            candle_high = data["High"]
+            candle_low = data["Low"]
+            candle_close = data["Close"]
+
+            if hasattr(candle_open, "columns"):
+                candle_open = candle_open.iloc[:, 0]
+            if hasattr(candle_high, "columns"):
+                candle_high = candle_high.iloc[:, 0]
+            if hasattr(candle_low, "columns"):
+                candle_low = candle_low.iloc[:, 0]
+            if hasattr(candle_close, "columns"):
+                candle_close = candle_close.iloc[:, 0]
+
+            candle_fig = go.Figure(
+                data=[
+                    go.Candlestick(
+                        x=data.index,
+                        open=candle_open,
+                        high=candle_high,
+                        low=candle_low,
+                        close=candle_close,
+                        name="Price"
+                    )
+                ]
+            )
+
+            candle_fig.update_layout(
+                title="Price Movement",
+                xaxis_title="Date",
+                yaxis_title="Price (₹)",
+                template="plotly_dark",
+                height=500,
+                xaxis_rangeslider_visible=False
+            )
+
+            st.plotly_chart(
+                candle_fig,
+                use_container_width=True
+            )
 
             # ==================================
             # RSI CHART
