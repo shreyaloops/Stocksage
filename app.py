@@ -459,7 +459,86 @@ if page == "📊 Stock Analysis":
                 macd_fig,
                 use_container_width=True
             )
-            
+    # ======================================
+    # PRICE ALERT
+    # ======================================
+
+    st.subheader("🔔 Price Alert")
+    alert_stocks = {
+        "Reliance Industries": "RELIANCE.NS",
+        "TCS": "TCS.NS",
+        "Infosys": "INFY.NS",
+        "HDFC Bank": "HDFCBANK.NS",
+        "ICICI Bank": "ICICIBANK.NS",
+        "State Bank of India": "SBIN.NS",
+        "ITC": "ITC.NS",
+        "Wipro": "WIPRO.NS",
+        "Tata Motors": "TATAMOTORS.NS",
+        "Bharti Airtel": "BHARTIARTL.NS"
+    }
+    alert_col1, alert_col2, alert_col3 = st.columns(3)
+
+    with alert_col1:
+        alert_stock = st.selectbox(
+            "Select Stock",
+            list(alert_stocks.keys()),
+            key="alert_stock"
+        )
+
+    with alert_col2:
+        alert_target = st.number_input(
+            "Target Price (₹)",
+            min_value=0.0,
+            step=10.0,
+            value=1000.0,
+            key="alert_target"
+        )
+
+    with alert_col3:
+        alert_condition = st.selectbox(
+            "Alert When",
+            ["🔼 Price goes above target", "🔽 Price goes below target"],
+            key="alert_condition"
+        )
+
+    alert_symbol = alert_stocks[alert_stock]
+
+    alert_data = yf.download(
+        alert_symbol,
+        period="5d",
+        progress=False
+    )
+
+    if not alert_data.empty:
+        alert_close = alert_data["Close"]
+
+        if hasattr(alert_close, "columns"):
+            alert_close = alert_close.iloc[:, 0]
+
+        alert_close = alert_close.dropna()
+
+        if not alert_close.empty:
+            alert_current_price = float(alert_close.iloc[-1])
+
+            if "above" in alert_condition:
+                alert_triggered = alert_current_price >= alert_target
+            else:
+                alert_triggered = alert_current_price <= alert_target
+
+            st.write(
+                f"Current Price: **₹{alert_current_price:.2f}**"
+            )
+
+            if alert_triggered:
+                st.error(
+                    f"🚨 Price Alert Triggered! "
+                    f"{alert_stock} has reached your target of ₹{alert_target:.2f}."
+                )
+            else:
+                st.info(
+                    f"🔔 Alert Active — waiting for "
+                    f"{'₹' + format(alert_target, '.2f') + ' or above' if 'above' in alert_condition else '₹' + format(alert_target, '.2f') + ' or below'}."
+                )            
 elif page == "🔍 Compare Stocks":
 
     st.markdown(
