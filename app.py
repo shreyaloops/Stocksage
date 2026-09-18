@@ -419,8 +419,19 @@ if page == "📊 Stock Analysis":
             
 elif page == "🔍 Compare Stocks":
 
-    st.title("🔍 Compare Stocks")
-
+    st.markdown(
+    """
+    <div style="padding: 10px 0 25px 0;">
+        <h1 style="margin-bottom: 5px;">
+            📊 Stock Comparison
+        </h1>
+        <p style="font-size: 18px; color: #9aa4b2;">
+            Compare performance, volatility, momentum, and risk
+        </p>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
     st.write(
         "Compare the performance and risk of multiple stocks."
     )
