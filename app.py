@@ -634,6 +634,108 @@ if page == "📊 Stock Analysis":
         else:
             st.info("Unable to download NIFTY 50 data for Beta calculation.")
 
+        # ======================================
+        # FUNDAMENTAL ANALYSIS
+        # ======================================
+
+        st.subheader("🏢 Fundamental Analysis")
+
+        stock_info = yf.Ticker(ticker).info
+
+        fundamental_data = {
+            "Market Cap": stock_info.get("marketCap"),
+            "P/E Ratio": stock_info.get("trailingPE"),
+            "EPS": stock_info.get("trailingEps"),
+            "Dividend Yield": stock_info.get("dividendYield"),
+            "Price-to-Book": stock_info.get("priceToBook"),
+            "Revenue": stock_info.get("totalRevenue"),
+            "Profit": stock_info.get("netIncomeToCommon"),
+            "Debt-to-Equity": stock_info.get("debtToEquity"),
+            "ROE": stock_info.get("returnOnEquity")
+        }
+
+        def format_large_number(value):
+            if value is None:
+                return "N/A"
+
+            if value >= 1_000_000_000_000:
+                return f"₹{value / 1_000_000_000_000:.2f}T"
+            elif value >= 1_000_000_000:
+                return f"₹{value / 1_000_000_000:.2f}B"
+            elif value >= 1_000_000:
+                return f"₹{value / 1_000_000:.2f}M"
+            else:
+                return f"₹{value:,.0f}"
+
+        col1, col2, col3, col4 = st.columns(4)
+
+        with col1:
+            st.metric(
+                "Market Cap",
+                format_large_number(fundamental_data["Market Cap"])
+            )
+
+        with col2:
+            pe = fundamental_data["P/E Ratio"]
+            st.metric(
+                "P/E Ratio",
+                f"{pe:.2f}" if pe is not None else "N/A"
+            )
+
+        with col3:
+            eps = fundamental_data["EPS"]
+            st.metric(
+                "EPS",
+                f"₹{eps:.2f}" if eps is not None else "N/A"
+            )
+
+        with col4:
+            dividend = fundamental_data["Dividend Yield"]
+            st.metric(
+                "Dividend Yield",
+                f"{dividend * 100:.2f}%" if dividend is not None else "N/A"
+            )
+
+        col5, col6, col7, col8 = st.columns(4)
+
+        with col5:
+            pb = fundamental_data["Price-to-Book"]
+            st.metric(
+                "Price-to-Book",
+                f"{pb:.2f}" if pb is not None else "N/A"
+            )
+
+        with col6:
+            st.metric(
+                "Revenue",
+                format_large_number(fundamental_data["Revenue"])
+            )
+
+        with col7:
+            st.metric(
+                "Net Profit",
+                format_large_number(fundamental_data["Profit"])
+            )
+
+        with col8:
+            de = fundamental_data["Debt-to-Equity"]
+            st.metric(
+                "Debt-to-Equity",
+                f"{de:.2f}" if de is not None else "N/A"
+            )
+
+        roe = fundamental_data["ROE"]
+
+        if roe is not None:
+            st.metric(
+                "Return on Equity (ROE)",
+                f"{roe * 100:.2f}%"
+            )
+
+        st.caption(
+            "Fundamental metrics are retrieved from Yahoo Finance and may vary based on the latest available company filings."
+        )
+
     # PRICE ALERT
     # ======================================
 
