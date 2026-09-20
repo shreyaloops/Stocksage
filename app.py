@@ -79,12 +79,13 @@ with st.sidebar:
     st.divider()
 
     page = st.radio(
-        "Navigation",
-        [
-            "📊 Stock Analysis",
-            "🔍 Compare Stocks",
-            "💼 Portfolio"
-        ]
+            "Navigation",
+            [
+                "📊 Stock Analysis",
+                "🔍 Compare Stocks",
+                "🔎 Stock Screener",
+                "💼 Portfolio"
+            ]
     )
 
     st.divider()
@@ -1030,6 +1031,122 @@ elif page == "🔍 Compare Stocks":
 
             st.error(
                 "Unable to retrieve data for the selected stocks."
+            )
+
+
+elif page == "🔎 Stock Screener":
+
+    st.markdown(
+        """
+        <div style="padding: 10px 0 25px 0;">
+            <h1 style="margin-bottom: 5px;">
+                🔎 Stock Screener
+            </h1>
+            <p style="font-size: 18px; color: #9aa4b2;">
+                Filter stocks using fundamental and technical metrics
+            </p>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    st.write(
+        "Find stocks that match your selected investment criteria."
+    )
+
+    screener_stocks = {
+        "Reliance Industries": "RELIANCE.NS",
+        "TCS": "TCS.NS",
+        "Infosys": "INFY.NS",
+        "HDFC Bank": "HDFCBANK.NS",
+        "ICICI Bank": "ICICIBANK.NS",
+        "State Bank of India": "SBIN.NS",
+        "ITC": "ITC.NS",
+        "Wipro": "WIPRO.NS",
+        "Tata Motors": "TATAMOTORS.NS",
+        "Bharti Airtel": "BHARTIARTL.NS"
+    }
+
+    st.subheader("🎯 Screening Criteria")
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        max_pe = st.number_input(
+            "Maximum P/E Ratio",
+            min_value=0.0,
+            value=50.0,
+            step=5.0
+        )
+
+    with col2:
+        min_roe = st.number_input(
+            "Minimum ROE (%)",
+            min_value=0.0,
+            value=10.0,
+            step=5.0
+        )
+
+    with col3:
+        min_dividend = st.number_input(
+            "Minimum Dividend Yield (%)",
+            min_value=0.0,
+            value=0.0,
+            step=1.0
+        )
+
+    if st.button("🔍 Screen Stocks", use_container_width=True):
+
+        results = []
+
+        with st.spinner("Analyzing stocks..."):
+
+            for name, stock_symbol in screener_stocks.items():
+
+                try:
+                    info = yf.Ticker(stock_symbol).info
+
+                    pe = info.get("trailingPE")
+                    roe = info.get("returnOnEquity")
+                    dividend = info.get("dividendYield")
+
+                    if pe is None:
+                        continue
+
+                    roe_percent = roe * 100 if roe is not None else 0
+                    dividend_percent = dividend * 100 if dividend is not None else 0
+
+                    if (
+                        pe <= max_pe
+                        and roe_percent >= min_roe
+                        and dividend_percent >= min_dividend
+                    ):
+                        results.append({
+                            "Stock": name,
+                            "P/E": round(pe, 2),
+                            "ROE": f"{roe_percent:.2f}%",
+                            "Dividend Yield": f"{dividend_percent:.2f}%"
+                        })
+
+                except Exception:
+                    continue
+
+        st.subheader("📋 Screening Results")
+
+        if results:
+            st.dataframe(
+                results,
+                use_container_width=True,
+                hide_index=True
+            )
+
+            st.success(
+                f"Found {len(results)} stock(s) matching your criteria."
+            )
+
+        else:
+            st.info(
+                "No stocks matched your selected criteria."
             )
 
 
