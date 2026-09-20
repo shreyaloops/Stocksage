@@ -523,6 +523,27 @@ if page == "📊 Stock Analysis":
 
         else:
             st.info("Not enough historical data to calculate returns.")
+        # ======================================
+        # VOLATILITY
+        # ======================================
+
+        st.subheader("📉 Volatility")
+
+        daily_returns = analytics_close.pct_change().dropna()
+
+        if len(daily_returns) > 1:
+            annualized_volatility = daily_returns.std() * (252 ** 0.5) * 100
+
+            st.metric(
+                "Annualized Volatility",
+                f"{annualized_volatility:.2f}%"
+            )
+
+            st.caption(
+                "Annualized volatility measures how much the stock's daily returns fluctuate."
+            )
+        else:
+            st.info("Not enough data to calculate volatility.")
     # PRICE ALERT
     # ======================================
 
