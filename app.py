@@ -592,6 +592,48 @@ if page == "📊 Stock Analysis":
         else:
             st.info("Not enough data to calculate Sharpe Ratio.")
 
+
+        # ======================================
+        # BETA VS NIFTY 50
+        # ======================================
+
+        st.subheader("📊 Beta vs NIFTY 50")
+
+        nifty_data = yf.download(
+            "^NSEI",
+            period="1y",
+            progress=False
+        )
+
+        if not nifty_data.empty:
+            nifty_close = nifty_data["Close"]
+
+            if hasattr(nifty_close, "columns"):
+                nifty_close = nifty_close.iloc[:, 0]
+
+            nifty_returns = nifty_close.pct_change().dropna()
+
+            beta_data = daily_returns.to_frame("stock").join(
+                nifty_returns.to_frame("nifty"),
+                how="inner"
+            ).dropna()
+
+            if len(beta_data) > 1 and beta_data["nifty"].var() != 0:
+                beta = beta_data["stock"].cov(beta_data["nifty"]) / beta_data["nifty"].var()
+
+                st.metric(
+                    "Beta vs NIFTY 50",
+                    f"{beta:.2f}"
+                )
+
+                st.caption(
+                    "Beta measures how much the stock has historically moved relative to the NIFTY 50."
+                )
+            else:
+                st.info("Not enough overlapping data to calculate Beta.")
+        else:
+            st.info("Unable to download NIFTY 50 data for Beta calculation.")
+
     # PRICE ALERT
     # ======================================
 
