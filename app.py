@@ -544,6 +544,26 @@ if page == "📊 Stock Analysis":
             )
         else:
             st.info("Not enough data to calculate volatility.")
+
+        # ======================================
+        # MAXIMUM DRAWDOWN
+        # ======================================
+
+        st.subheader("📉 Maximum Drawdown")
+
+        running_peak = analytics_close.cummax()
+        drawdown = (analytics_close - running_peak) / running_peak * 100
+        max_drawdown = drawdown.min()
+
+        st.metric(
+            "Maximum Drawdown",
+            f"{max_drawdown:.2f}%"
+        )
+
+        st.caption(
+            "Maximum drawdown measures the largest decline from a previous price peak."
+        )
+
     # PRICE ALERT
     # ======================================
 
