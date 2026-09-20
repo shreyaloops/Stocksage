@@ -564,6 +564,34 @@ if page == "📊 Stock Analysis":
             "Maximum drawdown measures the largest decline from a previous price peak."
         )
 
+
+        # ======================================
+        # SHARPE RATIO
+        # ======================================
+
+        st.subheader("📈 Sharpe Ratio")
+
+        if len(daily_returns) > 1:
+            risk_free_rate = 0.0
+            annualized_return = daily_returns.mean() * 252
+            annualized_std = daily_returns.std() * (252 ** 0.5)
+
+            if annualized_std != 0:
+                sharpe_ratio = (annualized_return - risk_free_rate) / annualized_std
+
+                st.metric(
+                    "Sharpe Ratio",
+                    f"{sharpe_ratio:.2f}"
+                )
+
+                st.caption(
+                    "Sharpe Ratio measures return relative to the volatility of the stock."
+                )
+            else:
+                st.info("Sharpe Ratio cannot be calculated when volatility is zero.")
+        else:
+            st.info("Not enough data to calculate Sharpe Ratio.")
+
     # PRICE ALERT
     # ======================================
 
