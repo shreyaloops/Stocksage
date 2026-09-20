@@ -459,7 +459,70 @@ if page == "📊 Stock Analysis":
                 macd_fig,
                 use_container_width=True
             )
-    # ======================================
+        # ======================================
+        # ADVANCED STOCK ANALYTICS
+        # ======================================
+
+        st.subheader("📊 Advanced Stock Analytics")
+
+        analytics_close = close.dropna()
+
+        if len(analytics_close) >= 21:
+
+            return_1m = (analytics_close.iloc[-1] / analytics_close.iloc[-21] - 1) * 100
+
+            if len(analytics_close) >= 63:
+                return_3m = (analytics_close.iloc[-1] / analytics_close.iloc[-63] - 1) * 100
+            else:
+                return_3m = None
+
+            if len(analytics_close) >= 126:
+                return_6m = (analytics_close.iloc[-1] / analytics_close.iloc[-126] - 1) * 100
+            else:
+                return_6m = None
+
+            if len(analytics_close) >= 252:
+                return_1y = (analytics_close.iloc[-1] / analytics_close.iloc[-252] - 1) * 100
+            else:
+                return_1y = None
+
+            col1, col2, col3, col4 = st.columns(4)
+
+            with col1:
+                st.metric(
+                    "1 Month Return",
+                    f"{return_1m:.2f}%"
+                )
+
+            with col2:
+                if return_3m is not None:
+                    st.metric(
+                        "3 Month Return",
+                        f"{return_3m:.2f}%"
+                    )
+                else:
+                    st.metric("3 Month Return", "N/A")
+
+            with col3:
+                if return_6m is not None:
+                    st.metric(
+                        "6 Month Return",
+                        f"{return_6m:.2f}%"
+                    )
+                else:
+                    st.metric("6 Month Return", "N/A")
+
+            with col4:
+                if return_1y is not None:
+                    st.metric(
+                        "1 Year Return",
+                        f"{return_1y:.2f}%"
+                    )
+                else:
+                    st.metric("1 Year Return", "N/A")
+
+        else:
+            st.info("Not enough historical data to calculate returns.")
     # PRICE ALERT
     # ======================================
 
