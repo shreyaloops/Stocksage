@@ -1368,6 +1368,18 @@ elif page == "🧪 Backtesting":
 
                 st.subheader("📈 Strategy Performance")
 
+                # BUY / SELL SIGNALS
+
+                buy_signals = (
+                    (sma_50 > sma_200)
+                    & (sma_50.shift(1) <= sma_200.shift(1))
+                )
+
+                sell_signals = (
+                    (sma_50 < sma_200)
+                    & (sma_50.shift(1) >= sma_200.shift(1))
+                )
+
                 backtest_fig = go.Figure()
 
                 backtest_fig.add_trace(
@@ -1396,6 +1408,32 @@ elif page == "🧪 Backtesting":
                         name="200-Day SMA"
                     )
                 )
+                backtest_fig.add_trace(
+                    go.Scatter(
+                        x=backtest_close.index[buy_signals],
+                        y=backtest_close[buy_signals],
+                        mode="markers",
+                        name="BUY",
+                        marker=dict(
+                            symbol="triangle-up",
+                            size=12
+                        )
+                    )
+                )
+
+                backtest_fig.add_trace(
+                    go.Scatter(
+                        x=backtest_close.index[sell_signals],
+                        y=backtest_close[sell_signals],
+                        mode="markers",
+                        name="SELL",
+                        marker=dict(
+                            symbol="triangle-down",
+                            size=12
+                        )
+                    )
+                )
+
 
                 backtest_fig.update_layout(
                     title="SMA Crossover Strategy",
