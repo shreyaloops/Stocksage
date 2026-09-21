@@ -1694,6 +1694,136 @@ elif page == "💼 Portfolio":
         # PORTFOLIO SUMMARY
         # ======================================
         # ======================================
+        # ======================================
+        # PORTFOLIO RISK DASHBOARD
+        # ======================================
+
+        st.subheader("📊 Portfolio Risk Dashboard")
+
+        risk_returns = []
+
+        for holding in holdings:
+            risk_symbol = holding[2]
+
+            risk_data = yf.download(
+                risk_symbol,
+                period="1y",
+                progress=False,
+                auto_adjust=False
+            )
+
+            if risk_data.empty:
+                continue
+
+            risk_close = risk_data["Close"]
+
+            if hasattr(risk_close, "columns"):
+                risk_close = risk_close.iloc[:, 0]
+
+            risk_close = risk_close.dropna()
+
+            if len(risk_close) > 1:
+                risk_returns.append(
+                    risk_close.pct_change().rename(risk_symbol)
+                )
+
+        if risk_returns:
+            risk_returns_df = __import__("pandas").concat(
+                risk_returns,
+                axis=1
+            ).dropna()
+
+            if not risk_returns_df.empty:
+                portfolio_weights = []
+
+                for holding in holdings:
+                    holding_symbol = holding[2]
+                    holding_value = holding[3] * holding[4]
+
+                    if total_invested > 0:
+                        portfolio_weights.append(
+                            holding_value / total_invested
+                        )
+
+                weights = __import__("numpy").array(
+                    portfolio_weights
+                )
+
+                if len(weights) == len(risk_returns_df.columns):
+                    portfolio_returns = (
+                        risk_returns_df * weights
+                    ).sum(axis=1)
+
+                    portfolio_volatility = (
+                        portfolio_returns.std()
+                        * (252 ** 0.5)
+                        * 100
+                    )
+
+                    st.metric(
+                        "Portfolio Volatility",
+                        f"{portfolio_volatility:.2f}%"
+                    )
+
+                    st.caption(
+                        "Annualized volatility based on the historical daily returns "
+                        "of your portfolio holdings."
+                    )
+
+                    # ======================================
+                    # PORTFOLIO BETA VS NIFTY 50
+                    # ======================================
+
+                    nifty_data = yf.download(
+                        "^NSEI",
+                        period="1y",
+                        progress=False,
+                        auto_adjust=False
+                    )
+
+                    if not nifty_data.empty:
+                        nifty_close = nifty_data["Close"]
+
+                        if hasattr(nifty_close, "columns"):
+                            nifty_close = nifty_close.iloc[:, 0]
+
+                        nifty_returns = (
+                            nifty_close
+                            .pct_change()
+                            .dropna()
+                        )
+
+                        beta_data = __import__("pandas").concat(
+                            [
+                                portfolio_returns.rename("portfolio"),
+                                nifty_returns.rename("nifty")
+                            ],
+                            axis=1
+                        ).dropna()
+
+                        if (
+                            len(beta_data) > 1
+                            and beta_data["nifty"].var() != 0
+                        ):
+                            portfolio_beta = (
+                                beta_data["portfolio"].cov(
+                                    beta_data["nifty"]
+                                )
+                                / beta_data["nifty"].var()
+                            )
+
+                            st.metric(
+                                "Portfolio Beta vs NIFTY 50",
+                                f"{portfolio_beta:.2f}"
+                            )
+
+                            st.caption(
+                                "Beta measures how your portfolio has historically "
+                                "moved relative to the NIFTY 50."
+                            )
+
+
+        # ======================================
         # PORTFOLIO DIVERSIFICATION
         # ======================================
 
