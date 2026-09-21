@@ -83,6 +83,7 @@ with st.sidebar:
             [
                 "📊 Stock Analysis",
                 "🔍 Compare Stocks",
+                "🧪 Backtesting",
                 "🔎 Stock Screener",
                 "💼 Portfolio"
             ]
@@ -1149,6 +1150,291 @@ elif page == "🔎 Stock Screener":
                 "No stocks matched your selected criteria."
             )
 
+
+elif page == "🧪 Backtesting":
+
+    st.markdown(
+        """
+        <div style="padding: 10px 0 25px 0;">
+            <h1 style="margin-bottom: 5px;">
+                🧪 Backtesting
+            </h1>
+            <p style="font-size: 18px; color: #9aa4b2;">
+                Test trading strategies against historical market data
+            </p>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    st.write(
+        "Simulate how a trading strategy would have performed using historical prices."
+    )
+
+    st.subheader("⚙️ Backtest Settings")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        backtest_ticker = st.text_input(
+            "Stock Symbol",
+            value="RELIANCE.NS",
+            help="Example: RELIANCE.NS, TCS.NS, INFY.NS"
+        )
+
+    with col2:
+        backtest_period = st.selectbox(
+            "Historical Period",
+            ["1y", "2y", "5y", "10y"],
+            index=2
+        )
+
+    initial_capital = st.number_input(
+        "Initial Capital (₹)",
+        min_value=1000.0,
+        value=100000.0,
+        step=10000.0
+    )
+
+    st.info(
+        "Strategy: Buy when the 50-day SMA crosses above the 200-day SMA "
+        "and sell when it crosses below."
+    )
+
+    if st.button("🚀 Run Backtest", use_container_width=True):
+
+        with st.spinner("Running historical backtest..."):
+
+            backtest_data = yf.download(
+                backtest_ticker,
+                period=backtest_period,
+                progress=False,
+                auto_adjust=False
+            )
+
+        if backtest_data.empty:
+            st.error("No historical data found. Please check the stock symbol.")
+
+        else:
+            backtest_close = backtest_data["Close"]
+
+            if hasattr(backtest_close, "columns"):
+                backtest_close = backtest_close.iloc[:, 0]
+
+            backtest_close = backtest_close.dropna()
+
+            if len(backtest_close) < 200:
+                st.warning(
+                    "Not enough historical data for a 200-day SMA strategy."
+                )
+
+            else:
+                sma_50 = backtest_close.rolling(50).mean()
+                sma_200 = backtest_close.rolling(200).mean()
+
+                position = (sma_50 > sma_200).astype(int)
+
+                daily_returns = backtest_close.pct_change().fillna(0)
+
+                strategy_returns = position.shift(1).fillna(0) * daily_returns
+
+                equity_curve = (
+                    initial_capital *
+                    (1 + strategy_returns).cumprod()
+                )
+
+                final_value = float(equity_curve.iloc[-1])
+
+                total_return = (
+                    (final_value / initial_capital) - 1
+                ) * 100
+
+                st.subheader("📊 Backtest Results")
+
+                col1, col2, col3 = st.columns(3)
+
+                with col1:
+                    st.metric(
+                        "Initial Capital",
+                        f"₹{initial_capital:,.2f}"
+                    )
+
+                with col2:
+                    st.metric(
+                        "Final Portfolio Value",
+                        f"₹{final_value:,.2f}"
+                    )
+
+                with col3:
+                    st.metric(
+                        "Total Return",
+                        f"{total_return:.2f}%"
+                    )
+
+                # ======================================
+                # BACKTEST PERFORMANCE METRICS
+                # ======================================
+
+                years = (
+                    backtest_close.index[-1] - backtest_close.index[0]
+                ).days / 365.25
+
+                if years > 0:
+                    cagr = (
+                        (final_value / initial_capital) ** (1 / years) - 1
+                    ) * 100
+                else:
+                    cagr = 0
+
+                trade_changes = position.diff().fillna(0)
+
+                buy_signals = (trade_changes == 1).sum()
+                sell_signals = (trade_changes == -1).sum()
+
+                total_trades = int(
+                    buy_signals + sell_signals
+                )
+
+                winning_days = (
+                    strategy_returns[strategy_returns > 0].count()
+                )
+
+                active_days = (
+                    strategy_returns[strategy_returns != 0].count()
+                )
+
+                if active_days > 0:
+                    win_rate = (
+                        winning_days / active_days
+                    ) * 100
+                else:
+                    win_rate = 0
+
+                running_peak = equity_curve.cummax()
+
+                drawdown = (
+                    (equity_curve - running_peak)
+                    / running_peak
+                ) * 100
+
+                max_drawdown = drawdown.min()
+
+                annualized_return = strategy_returns.mean() * 252
+                annualized_volatility = (
+                    strategy_returns.std() * (252 ** 0.5)
+                )
+
+                if annualized_volatility != 0:
+                    backtest_sharpe = (
+                        annualized_return
+                        / annualized_volatility
+                    )
+                else:
+                    backtest_sharpe = 0
+
+                st.subheader("📊 Performance Metrics")
+
+                metric1, metric2, metric3, metric4, metric5 = st.columns(5)
+
+                with metric1:
+                    st.metric(
+                        "CAGR",
+                        f"{cagr:.2f}%"
+                    )
+
+                with metric2:
+                    st.metric(
+                        "Trades",
+                        total_trades
+                    )
+
+                with metric3:
+                    st.metric(
+                        "Win Rate",
+                        f"{win_rate:.2f}%"
+                    )
+
+                with metric4:
+                    st.metric(
+                        "Max Drawdown",
+                        f"{max_drawdown:.2f}%"
+                    )
+
+                with metric5:
+                    st.metric(
+                        "Sharpe Ratio",
+                        f"{backtest_sharpe:.2f}"
+                    )
+
+                st.subheader("📈 Strategy Performance")
+
+                backtest_fig = go.Figure()
+
+                backtest_fig.add_trace(
+                    go.Scatter(
+                        x=backtest_close.index,
+                        y=backtest_close,
+                        mode="lines",
+                        name="Stock Price"
+                    )
+                )
+
+                backtest_fig.add_trace(
+                    go.Scatter(
+                        x=sma_50.index,
+                        y=sma_50,
+                        mode="lines",
+                        name="50-Day SMA"
+                    )
+                )
+
+                backtest_fig.add_trace(
+                    go.Scatter(
+                        x=sma_200.index,
+                        y=sma_200,
+                        mode="lines",
+                        name="200-Day SMA"
+                    )
+                )
+
+                backtest_fig.update_layout(
+                    title="SMA Crossover Strategy",
+                    xaxis_title="Date",
+                    yaxis_title="Price (₹)",
+                    template="plotly_dark",
+                    height=500
+                )
+
+                st.plotly_chart(
+                    backtest_fig,
+                    use_container_width=True
+                )
+
+                st.subheader("💰 Portfolio Equity Curve")
+
+                equity_fig = go.Figure()
+
+                equity_fig.add_trace(
+                    go.Scatter(
+                        x=equity_curve.index,
+                        y=equity_curve,
+                        mode="lines",
+                        name="Portfolio Value"
+                    )
+                )
+
+                equity_fig.update_layout(
+                    title="Backtested Portfolio Value",
+                    xaxis_title="Date",
+                    yaxis_title="Portfolio Value (₹)",
+                    template="plotly_dark",
+                    height=450
+                )
+
+                st.plotly_chart(
+                    equity_fig,
+                    use_container_width=True
+                )
 
 elif page == "💼 Portfolio":
 
