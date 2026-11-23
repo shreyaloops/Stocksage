@@ -1822,6 +1822,70 @@ elif page == "💼 Portfolio":
                                 "moved relative to the NIFTY 50."
                             )
 
+                            # ======================================
+                            # PORTFOLIO MAXIMUM DRAWDOWN
+                            # ======================================
+
+                            cumulative_portfolio = (
+                                1 + portfolio_returns
+                            ).cumprod()
+
+                            running_peak = (
+                                cumulative_portfolio.cummax()
+                            )
+
+                            portfolio_drawdown = (
+                                (cumulative_portfolio - running_peak)
+                                / running_peak
+                            ) * 100
+
+                            portfolio_max_drawdown = (
+                                portfolio_drawdown.min()
+                            )
+
+                            st.metric(
+                                "Portfolio Max Drawdown",
+                                f"{portfolio_max_drawdown:.2f}%"
+                            )
+
+                            st.caption(
+                                "Largest historical decline from a previous "
+                                "portfolio peak."
+                            )
+
+                            # ======================================
+                            # PORTFOLIO SHARPE RATIO
+                            # ======================================
+
+                            annualized_return = (
+                                portfolio_returns.mean() * 252
+                            )
+
+                            annualized_volatility = (
+                                portfolio_returns.std()
+                                * (252 ** 0.5)
+                            )
+
+                            if annualized_volatility != 0:
+                                portfolio_sharpe = (
+                                    annualized_return
+                                    / annualized_volatility
+                                )
+                            else:
+                                portfolio_sharpe = 0
+
+                            st.metric(
+                                "Portfolio Sharpe Ratio",
+                                f"{portfolio_sharpe:.2f}"
+                            )
+
+                            st.caption(
+                                "Risk-adjusted portfolio performance based "
+                                "on historical daily returns."
+                            )
+
+
+
 
         # ======================================
         # PORTFOLIO DIVERSIFICATION
